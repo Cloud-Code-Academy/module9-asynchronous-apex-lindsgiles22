@@ -24,35 +24,51 @@ public with sharing class NextStepQueueable {
 
     // Constructor to accept the accounts
     public NextStepQueueable(Map<Id,Account> accounts) {
-        // Store the accounts in a member variable
+        this.accounts = accounts;
     }
 
     // Method to queue the job
     public static void enqueueJob() {
         // Get 10 accounts with Next Step populated
-
+        List<Account> accList = [SELECT Id, Next_Step__c FROM Account WHERE Next_Step__c != null LIMIT 10];
         // If there are any accounts, queue the job using System.enqueueJob
+        if (!accList.isEmpty()) {
+            // Convert to a map for the constructor
+            Map<Id, Account> accMap = new Map<Id,Account>(accList);
+
+            // Enqueue the job
+            System.enqueueJob(new NextStepQueueable(accMap));
+        }
     }
 
     /*
      * Update/Uncomment the template code to create a method
      * Method to execute the queueable job
      */
-    //[public | private ] [static] data_type execute (input parameters) {
+    public void execute (QueueableContext context) {
         // Get the accounts from the member variable
-
+        for (Account acc : accounts.values()) {
             // Remove the Next Step using the helper method
-
+            removeNextStep(acc);
+        }
         // Update the accounts
+        update accounts.values();
 
         // Get the opportunities related to the accounts
+        Set<Id> accountIds = accounts.keySet();
+        List<Opportunity> oppList = [SELECT Id, NextStep FROM Opportunity WHERE AccountId in :accountIds];
 
-            // Remove the Next Step using the helper method
+        // Remove the Next Step using the helper method
+        for (Opportunity opp : oppList) {
+            removeNextStep(opp);
+        }
 
         // Update the opportunities
+        update oppList;
 
         // Call the enqueueJob method to queue another job to process more records.
-    //}
+        enqueueJob();
+    }
 
     // Helper method to remove the Next Step
     // Overloaded method to accept an opportunity
