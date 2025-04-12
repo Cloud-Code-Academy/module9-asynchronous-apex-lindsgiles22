@@ -61,6 +61,7 @@ public with sharing class NextStepFuture {
     }
 
     // Helper method to insert big deal
+    @future
     private static void insertBigDeal(Opportunity opp) {
         opp.Amount = 1000000;
         opp.Name = 'Big Deal';
@@ -72,6 +73,7 @@ public with sharing class NextStepFuture {
 
 
     // Helper method to update role name
+    @future
     private static void updateUserRoleName(UserRole[] roles){
         UserRole role;
         if (roles.isEmpty()) {
