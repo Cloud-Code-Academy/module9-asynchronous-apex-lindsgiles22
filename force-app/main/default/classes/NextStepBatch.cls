@@ -42,7 +42,7 @@ public with sharing class NextStepBatch implements Database.Batchable<sObject>{
         // Loop through the opportunity records
         for (Opportunity opp : opportunties) {
             // Set the Next Step field to 'Batching the next meetings together.'
-            opp.Next_Step = BATCH_NEXT_STEP;
+            opp.NextStep = BATCH_NEXT_STEP;
         }
         // Update the opportunity records
         update opportunties;
