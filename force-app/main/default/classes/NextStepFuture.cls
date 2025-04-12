@@ -27,9 +27,22 @@ public with sharing class NextStepFuture {
      * Opportunity Next Step field is a standard field
      * Update the corresponding test class AsynchronousTest and test method nextStepFuture_testUpdateAllNextStep to cover test this method
      */
-    //[public | private ] [static] data_type method_name (input parameters) {
-    //  The body of the method
-    //}
+    @future 
+    public static void updateNextSteps (List<Id> accountIds) {
+        List <Account> accounts = [SELECT Id, Next_Step__c FROM Account WHERE Id IN :accountIds];
+        //  The body of the method
+        for (Account acc : accounts) {
+            acc.Next_Step__c = 'Meeting in the future';
+        }
+        update accounts;
+
+        List <Opportunity> opps = [SELECT Id, NextStep, AccountId FROM Opportunity WHERE AccountId IN :accountIds];
+        for (Opportunity opp : opps) {
+            opp.NextStep = 'Meeting in the future';
+        }
+        update opps;
+
+    }
 
     /*
     * Question 2
@@ -39,26 +52,28 @@ public with sharing class NextStepFuture {
     */
     //Mix DML Error happens when you try to perform DML operations on setup and non-setup objects in a single transaction.
     public static void createDealAndUpdateRole() {
-        Opportunity bigDeal = new Opportunity();
-        insertBigDeal(bigDeal);
-
-        UserRole[] roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
-        updateUserRoleName(roles);
+        insertBigDeal();
+        updateUserRoleName();
     }
 
     // Helper method to insert big deal
-    private static void insertBigDeal(Opportunity opp) {
-        opp.Amount = 1000000;
-        opp.Name = 'Big Deal';
-        opp.StageName = 'Closed Won'; 
-        opp.CloseDate = Date.today();
-        
+    @future
+    private static void insertBigDeal() {
+        Opportunity opp = new Opportunity(
+            Amount = 1000000,
+            Name = 'Big Deal',
+            StageName = 'Closed Won',
+            CloseDate = Date.today()
+        );
         insert opp;
     }
 
 
     // Helper method to update role name
-    private static void updateUserRoleName(UserRole[] roles){
+    @future
+    private static void updateUserRoleName(){
+        List <UserRole> roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
+        
         UserRole role;
         if (roles.isEmpty()) {
             role = new UserRole();
@@ -70,7 +85,6 @@ public with sharing class NextStepFuture {
         }
 
         role.Name = 'CRO';
-
         upsert role;
     }
 }
