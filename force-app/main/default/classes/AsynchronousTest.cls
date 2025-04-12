@@ -43,7 +43,11 @@ public with sharing class AsynchronousTest {
 
         // Call the method to test between the startTest and stopTest methods
         Test.startTest();
-        NextStepFuture.updateNextSteps(new List<Id>(testAccounts));
+        List<Id> accountIds = new List<Id>();
+        for (Account acc : testAccounts) {
+            accountIds.add(acc.Id);
+        }
+        NextStepFuture.updateNextSteps(accountIds);
         Test.stopTest();
 
         // Query the updated accounts and opportunities
