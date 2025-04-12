@@ -37,7 +37,6 @@ public with sharing class NextStepFuture {
         update accounts;
 
         List <Opportunity> opps = [SELECT Id, NextStep, AccountId FROM Opportunity WHERE AccountId IN :accountIds];
-
         for (Opportunity opp : opps) {
             opp.NextStep = 'Meeting in the future';
         }
@@ -53,28 +52,28 @@ public with sharing class NextStepFuture {
     */
     //Mix DML Error happens when you try to perform DML operations on setup and non-setup objects in a single transaction.
     public static void createDealAndUpdateRole() {
-        Opportunity bigDeal = new Opportunity();
-        insertBigDeal(bigDeal);
-
-        UserRole[] roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
-        updateUserRoleName(roles);
+        insertBigDeal();
+        updateUserRoleName();
     }
 
     // Helper method to insert big deal
     @future
-    private static void insertBigDeal(Opportunity opp) {
-        opp.Amount = 1000000;
-        opp.Name = 'Big Deal';
-        opp.StageName = 'Closed Won'; 
-        opp.CloseDate = Date.today();
-        
+    private static void insertBigDeal() {
+        Opportunity opp = new Opportunity(
+            Amount = 1000000,
+            Name = 'Big Deal',
+            StageName = 'Closed Won',
+            CloseDate = Date.today()
+        );
         insert opp;
     }
 
 
     // Helper method to update role name
     @future
-    private static void updateUserRoleName(UserRole[] roles){
+    private static void updateUserRoleName(){
+        List <UserRole> roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
+        
         UserRole role;
         if (roles.isEmpty()) {
             role = new UserRole();
@@ -86,7 +85,6 @@ public with sharing class NextStepFuture {
         }
 
         role.Name = 'CRO';
-
         upsert role;
     }
 }
